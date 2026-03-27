@@ -11,7 +11,7 @@ let activeDriver: any = null;
 
 function destroyDriver() {
   if (activeDriver) {
-    try { activeDriver.destroy(); } catch { /* ignore */ }
+    try { activeDriver.destroy(); } catch { /* noop */ }
     activeDriver = null;
   }
 }
@@ -21,250 +21,264 @@ export default function TourGuide() {
   const router = useRouter();
   const { kalkulace } = useKalkulaceStore();
 
-  // Refs drží vždy aktuální hodnoty – nebloky useEffect na re-renderech
   const routerRef = useRef(router);
   const kalkulaceRef = useRef(kalkulace);
   routerRef.current = router;
   kalkulaceRef.current = kalkulace;
 
+  // Ref zabraňuje spuštění na unmounted komponentě
+  const cancelledRef = useRef(false);
+
   useEffect(() => {
+    cancelledRef.current = false;
+
     const globalStep = getTourStep();
     if (globalStep === null) return;
 
+    // Zruš předchozí driver (pokud existuje)
     destroyDriver();
 
-    // Prodleva, aby se stihly vyrenderovat všechny elementy
     const timer = setTimeout(async () => {
+      if (cancelledRef.current) return;
+
       const step = getTourStep();
       if (step === null) return;
 
-      const { driver } = await import('driver.js');
+      try {
+        const { driver } = await import('driver.js');
+        if (cancelledRef.current) return;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      function go(steps: any[], localIndex: number) {
-        activeDriver = driver({
-          animate: true,
-          smoothScroll: true,
-          allowClose: true,
-          overlayOpacity: 0.6,
-          stagePadding: 6,
-          stageRadius: 8,
-          showProgress: false,
-          popoverClass: 'ampersun-tour-popover',
-          nextBtnText: 'Další →',
-          prevBtnText: '← Zpět',
-          doneBtnText: 'Zavřít',
-          onDestroyed: () => { activeDriver = null; },
-          steps,
-        });
-        activeDriver.drive(localIndex);
-      }
+        // Pomocná funkce pro navigaci na další stránku
+        function navigateTo(nextStep: number, url: string) {
+          setTourStep(nextStep);
+          // Nedestroj driver synchronně – nech useEffect cleanup to udělat
+          // Jen naviguj a při příštím renderování se cleanup postará o destroy
+          routerRef.current.push(url);
+        }
 
-      // ── DASHBOARD (0–1) ──────────────────────────────────────────────────
-      if (pathname === '/') {
-        const { start, end } = TOUR_PAGES.dashboard;
-        if (step < start || step > end) return;
-        go([
-          {
-            popover: {
-              title: '👋 Vítejte v AmperSun!',
-              description: 'Tento průvodce vás provede celým procesem — od vytvoření kalkulace až po stažení PDF nabídky. Klikněte <b>Další</b> pro pokračování.',
-              side: 'over',
-              align: 'center',
-              onNextClick: () => { setTourStep(1); activeDriver?.moveNext(); },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        function go(steps: any[], localIndex: number) {
+          // Odfiltruj kroky s elementem, který neexistuje v DOM
+          const validSteps = steps.filter(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (s: any) => !s.element || document.querySelector(s.element)
+          );
+          if (validSteps.length === 0) return;
+
+          // Přepočti localIndex pokud se kroky změnily
+          const adjustedIndex = Math.min(localIndex, validSteps.length - 1);
+
+          activeDriver = driver({
+            animate: true,
+            smoothScroll: true,
+            allowClose: true,
+            overlayOpacity: 0.6,
+            stagePadding: 6,
+            stageRadius: 8,
+            showProgress: false,
+            popoverClass: 'ampersun-tour-popover',
+            nextBtnText: 'Další →',
+            prevBtnText: '← Zpět',
+            doneBtnText: 'Zavřít',
+            onDestroyStarted: () => {
+              // Uživatel kliknul X nebo Escape
+              endTour();
             },
-          },
-          {
-            element: '#tour-nova-btn',
-            popover: {
-              title: 'Nová kalkulace',
-              description: 'Tímto tlačítkem vytvoříte novou zakázku. Vyplníte zákazníka, technické parametry a systém spočítá cenu.',
-              side: 'bottom',
-              align: 'end',
-              onNextClick: () => {
-                setTourStep(TOUR_PAGES.nova.start);
-                setTimeout(() => {
-                  destroyDriver();
-                  routerRef.current.push('/kalkulace/nova');
-                }, 50);
+            onDestroyed: () => { activeDriver = null; },
+            steps: validSteps,
+          });
+          activeDriver.drive(adjustedIndex);
+        }
+
+        // ── DASHBOARD (0–1) ──────────────────────────────────────────
+        if (pathname === '/') {
+          const { start, end } = TOUR_PAGES.dashboard;
+          if (step < start || step > end) return;
+          go([
+            {
+              popover: {
+                title: '👋 Vítejte v AmperSun!',
+                description: 'Tento průvodce vás provede celým procesem — od vytvoření kalkulace až po stažení PDF nabídky.',
+                side: 'over' as const,
+                align: 'center' as const,
+                onNextClick: () => { setTourStep(1); activeDriver?.moveNext(); },
               },
             },
-          },
-        ], step - start);
-        return;
-      }
-
-      // ── NOVÁ KALKULACE (2–5) ─────────────────────────────────────────────
-      if (pathname === '/kalkulace/nova') {
-        const { start, end } = TOUR_PAGES.nova;
-        if (step < start || step > end) return;
-        go([
-          {
-            element: '#tour-typ-zakazky',
-            popover: {
-              title: 'Typ zakázky',
-              description: 'Nejprve vyberte typ zakázky. Pro běžný dům zvolte <b>FVE Rodinný dům</b>.',
-              side: 'bottom',
-              align: 'start',
-              onNextClick: () => { setTourStep(3); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-klient',
-            popover: {
-              title: 'Údaje zákazníka',
-              description: 'Vyplňte jméno nebo název firmy, adresu realizace a kontaktní údaje zákazníka.',
-              side: 'top',
-              align: 'center',
-              onNextClick: () => { setTourStep(4); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-technicke',
-            popover: {
-              title: 'Technické parametry FVE',
-              description: 'Zadejte výkon FVE v kWp a počet panelů. Typ panelů a střídač jsou volitelné upřesnění.',
-              side: 'top',
-              align: 'center',
-              onNextClick: () => { setTourStep(5); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-save-btn',
-            popover: {
-              title: 'Uložit a pokračovat',
-              description: 'Po vyplnění formuláře klikněte na <b>Uložit a přejít na kalkulaci</b>. Systém automaticky spočítá cenu.',
-              side: 'top',
-              align: 'end',
-              onNextClick: () => {
-                setTourStep(TOUR_PAGES.list.start);
-                setTimeout(() => {
-                  destroyDriver();
-                  routerRef.current.push('/kalkulace');
-                }, 50);
+            {
+              element: '#tour-nova-btn',
+              popover: {
+                title: 'Nová kalkulace',
+                description: 'Tímto tlačítkem vytvoříte novou zakázku.',
+                side: 'bottom' as const,
+                align: 'end' as const,
+                onNextClick: () => navigateTo(TOUR_PAGES.nova.start, '/kalkulace/nova'),
               },
             },
-          },
-        ], step - start);
-        return;
-      }
+          ], step - start);
+          return;
+        }
 
-      // ── SEZNAM (6–7) ────────────────────────────────────────────────────
-      if (pathname === '/kalkulace') {
-        const { start, end } = TOUR_PAGES.list;
-        if (step < start || step > end) return;
-        const firstId = kalkulaceRef.current[0]?.id;
-        go([
-          {
-            element: '#tour-filters',
-            popover: {
-              title: 'Vyhledávání a filtry',
-              description: 'Kalkulace lze filtrovat podle typu zakázky a stavu, nebo vyhledávat podle jména zákazníka či čísla nabídky.',
-              side: 'bottom',
-              align: 'start',
-              onNextClick: () => { setTourStep(7); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-kalkulace-row',
-            popover: {
-              title: 'Detail kalkulace',
-              description: 'Každý řádek je jedna zakázka. Kliknutím na ikonu oka 👁 otevřete detail s výpočtem ceny.',
-              side: 'top',
-              align: 'center',
-              onNextClick: () => {
-                if (!firstId) { endTour(); destroyDriver(); return; }
-                setTourStep(TOUR_PAGES.detail.start);
-                setTimeout(() => {
-                  destroyDriver();
-                  routerRef.current.push(`/kalkulace/${firstId}`);
-                }, 50);
+        // ── NOVÁ KALKULACE (2–5) ────────────────────────────────────
+        if (pathname === '/kalkulace/nova') {
+          const { start, end } = TOUR_PAGES.nova;
+          if (step < start || step > end) return;
+          go([
+            {
+              element: '#tour-typ-zakazky',
+              popover: {
+                title: 'Typ zakázky',
+                description: 'Nejprve vyberte typ zakázky. Pro běžný dům zvolte <b>FVE Rodinný dům</b>.',
+                side: 'bottom' as const,
+                align: 'start' as const,
+                onNextClick: () => { setTourStep(3); activeDriver?.moveNext(); },
               },
             },
-          },
-        ], step - start);
-        return;
-      }
-
-      // ── DETAIL (8–10) ───────────────────────────────────────────────────
-      const detailMatch = pathname.match(/^\/kalkulace\/([^/]+)$/);
-      if (detailMatch) {
-        const { start, end } = TOUR_PAGES.detail;
-        if (step < start || step > end) return;
-        const approvedKalk = kalkulaceRef.current.find((k) => k.cenova?.schvaleno);
-        const currentId = detailMatch[1];
-        go([
-          {
-            element: '#tour-price-cards',
-            popover: {
-              title: 'Přehled cen',
-              description: 'Systém spočítal cenu automaticky. Vidíte <b>pravidlovou kalkulaci</b>, <b>doporučenou cenu</b> z historicky podobných zakázek a <b>finální návrh</b>.',
-              side: 'bottom',
-              align: 'center',
-              onNextClick: () => { setTourStep(9); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-polozky',
-            popover: {
-              title: 'Rozpis položek',
-              description: 'Detailní přehled všech položek kalkulace. Kliknutím na <b>Upravit položky</b> můžete ručně upravit ceny.',
-              side: 'top',
-              align: 'center',
-              onNextClick: () => { setTourStep(10); activeDriver?.moveNext(); },
-            },
-          },
-          {
-            element: '#tour-schvaleni-panel',
-            popover: {
-              title: 'Schválení finální ceny',
-              description: 'Zadejte finální cenu (nebo slevu) a klikněte na <b>Schválit cenu</b>. Tím se zpřístupní generování PDF nabídky.',
-              side: 'left',
-              align: 'start',
-              onNextClick: () => {
-                const targetId = approvedKalk?.id ?? currentId;
-                setTourStep(TOUR_PAGES.nabidka.start);
-                setTimeout(() => {
-                  destroyDriver();
-                  routerRef.current.push(`/kalkulace/${targetId}/nabidka`);
-                }, 50);
+            {
+              element: '#tour-klient',
+              popover: {
+                title: 'Údaje zákazníka',
+                description: 'Vyplňte jméno, adresu realizace a kontaktní údaje.',
+                side: 'top' as const,
+                align: 'center' as const,
+                onNextClick: () => { setTourStep(4); activeDriver?.moveNext(); },
               },
             },
-          },
-        ], step - start);
-        return;
-      }
+            {
+              element: '#tour-technicke',
+              popover: {
+                title: 'Technické parametry',
+                description: 'Zadejte výkon FVE v kWp a počet panelů.',
+                side: 'top' as const,
+                align: 'center' as const,
+                onNextClick: () => { setTourStep(5); activeDriver?.moveNext(); },
+              },
+            },
+            {
+              element: '#tour-save-btn',
+              popover: {
+                title: 'Uložit a pokračovat',
+                description: 'Po vyplnění klikněte na <b>Uložit</b>. Systém automaticky spočítá cenu.',
+                side: 'top' as const,
+                align: 'end' as const,
+                onNextClick: () => navigateTo(TOUR_PAGES.list.start, '/kalkulace'),
+              },
+            },
+          ], step - start);
+          return;
+        }
 
-      // ── NABÍDKA (11–12) ─────────────────────────────────────────────────
-      const nabidkaMatch = pathname.match(/^\/kalkulace\/([^/]+)\/nabidka$/);
-      if (nabidkaMatch) {
-        const { start, end } = TOUR_PAGES.nabidka;
-        if (step < start || step > end) return;
-        go([
-          {
-            element: '#tour-download-btn',
-            popover: {
-              title: 'Stažení PDF nabídky',
-              description: 'Kliknutím na toto tlačítko se vygeneruje PDF nabídka a automaticky se stáhne do vašeho počítače.',
-              side: 'bottom',
-              align: 'end',
-              onNextClick: () => { setTourStep(12); activeDriver?.moveNext(); },
+        // ── SEZNAM (6–7) ────────────────────────────────────────────
+        if (pathname === '/kalkulace') {
+          const { start, end } = TOUR_PAGES.list;
+          if (step < start || step > end) return;
+          const firstId = kalkulaceRef.current[0]?.id;
+          go([
+            {
+              element: '#tour-filters',
+              popover: {
+                title: 'Vyhledávání a filtry',
+                description: 'Filtrujte podle typu, stavu nebo vyhledávejte.',
+                side: 'bottom' as const,
+                align: 'start' as const,
+                onNextClick: () => { setTourStep(7); activeDriver?.moveNext(); },
+              },
             },
-          },
-          {
-            popover: {
-              title: '🎉 Průvodce dokončen!',
-              description: 'Skvěle! Nyní znáte celý proces — od vytvoření kalkulace až po stažení profesionální PDF nabídky pro zákazníka. Hodně úspěchů!',
-              side: 'over',
-              align: 'center',
-              onNextClick: () => { endTour(); destroyDriver(); },
+            {
+              element: '#tour-kalkulace-row',
+              popover: {
+                title: 'Detail kalkulace',
+                description: 'Kliknutím na ikonu oka otevřete detail.',
+                side: 'top' as const,
+                align: 'center' as const,
+                onNextClick: () => {
+                  if (!firstId) { endTour(); activeDriver?.destroy(); return; }
+                  navigateTo(TOUR_PAGES.detail.start, `/kalkulace/${firstId}`);
+                },
+              },
             },
-          },
-        ], step - start);
+          ], step - start);
+          return;
+        }
+
+        // ── DETAIL (8–10) ───────────────────────────────────────────
+        const detailMatch = pathname.match(/^\/kalkulace\/([^/]+)$/);
+        if (detailMatch) {
+          const { start, end } = TOUR_PAGES.detail;
+          if (step < start || step > end) return;
+          const approvedKalk = kalkulaceRef.current.find((k) => k.cenova?.schvaleno);
+          const currentId = detailMatch[1];
+          go([
+            {
+              element: '#tour-price-cards',
+              popover: {
+                title: 'Přehled cen',
+                description: 'Pravidlová kalkulace, doporučená cena a finální návrh.',
+                side: 'bottom' as const,
+                align: 'center' as const,
+                onNextClick: () => { setTourStep(9); activeDriver?.moveNext(); },
+              },
+            },
+            {
+              element: '#tour-polozky',
+              popover: {
+                title: 'Rozpis položek',
+                description: 'Detailní přehled všech položek kalkulace.',
+                side: 'top' as const,
+                align: 'center' as const,
+                onNextClick: () => { setTourStep(10); activeDriver?.moveNext(); },
+              },
+            },
+            {
+              element: '#tour-schvaleni-panel',
+              popover: {
+                title: 'Schválení ceny',
+                description: 'Zadejte finální cenu a klikněte <b>Schválit</b>. Tím se zpřístupní PDF.',
+                side: 'left' as const,
+                align: 'start' as const,
+                onNextClick: () => {
+                  const targetId = approvedKalk?.id ?? currentId;
+                  navigateTo(TOUR_PAGES.nabidka.start, `/kalkulace/${targetId}/nabidka`);
+                },
+              },
+            },
+          ], step - start);
+          return;
+        }
+
+        // ── NABÍDKA (11–12) ─────────────────────────────────────────
+        const nabidkaMatch = pathname.match(/^\/kalkulace\/([^/]+)\/nabidka$/);
+        if (nabidkaMatch) {
+          const { start, end } = TOUR_PAGES.nabidka;
+          if (step < start || step > end) return;
+          go([
+            {
+              element: '#tour-download-btn',
+              popover: {
+                title: 'Stažení PDF',
+                description: 'Kliknutím se vygeneruje a stáhne PDF nabídka.',
+                side: 'bottom' as const,
+                align: 'end' as const,
+                onNextClick: () => { setTourStep(12); activeDriver?.moveNext(); },
+              },
+            },
+            {
+              popover: {
+                title: '🎉 Hotovo!',
+                description: 'Nyní znáte celý proces od kalkulace až po PDF nabídku. Hodně úspěchů!',
+                side: 'over' as const,
+                align: 'center' as const,
+                onNextClick: () => { endTour(); activeDriver?.destroy(); },
+              },
+            },
+          ], step - start);
+        }
+      } catch (err) {
+        console.error('[TourGuide] Chyba:', err);
       }
-    }, 500);
+    }, 600);
 
     return () => {
+      cancelledRef.current = true;
       clearTimeout(timer);
       destroyDriver();
     };
