@@ -1,4 +1,5 @@
 export const TOUR_KEY = 'ampersun_tour_step';
+export const TOUR_DONE_KEY = 'ampersun_tour_done';
 
 /** Vrátí aktuální globální krok průvodce, nebo null pokud průvodce neběží */
 export function getTourStep(): number | null {
@@ -12,9 +13,21 @@ export function setTourStep(step: number) {
   sessionStorage.setItem(TOUR_KEY, String(step));
 }
 
-/** Ukončí průvodce */
+/** Ukončí průvodce a zapamatuje si, že uživatel ho už absolvoval */
 export function endTour() {
   sessionStorage.removeItem(TOUR_KEY);
+  localStorage.setItem(TOUR_DONE_KEY, 'true');
+}
+
+/** Zjistí, jestli uživatel už tour absolvoval (přetrvává přes sessions) */
+export function isTourDone(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(TOUR_DONE_KEY) === 'true';
+}
+
+/** Resetuje příznak dokončení — pro ruční opakování tour */
+export function resetTourDone() {
+  localStorage.removeItem(TOUR_DONE_KEY);
 }
 
 /** Rozsahy kroků pro každou stránku (globální indexy) */

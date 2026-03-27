@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useKalkulaceStore } from '@/lib/store';
-import { getTourStep, setTourStep, endTour, TOUR_PAGES } from '@/lib/tour';
+import { getTourStep, setTourStep, endTour, isTourDone, TOUR_PAGES } from '@/lib/tour';
 import 'driver.js/dist/driver.css';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,16 +26,15 @@ export default function TourGuide() {
   routerRef.current = router;
   kalkulaceRef.current = kalkulace;
 
-  // Ref zabraňuje spuštění na unmounted komponentě
   const cancelledRef = useRef(false);
 
   useEffect(() => {
     cancelledRef.current = false;
 
     const globalStep = getTourStep();
-    if (globalStep === null) return;
+    // Pokud tour neběží nebo už byl dokončen, nic nedělej
+    if (globalStep === null || isTourDone()) return;
 
-    // Zruš předchozí driver (pokud existuje)
     destroyDriver();
 
     const timer = setTimeout(async () => {
@@ -48,26 +47,13 @@ export default function TourGuide() {
         const { driver } = await import('driver.js');
         if (cancelledRef.current) return;
 
-        // Pomocná funkce pro navigaci na další stránku
         function navigateTo(nextStep: number, url: string) {
           setTourStep(nextStep);
-          // Nedestroj driver synchronně – nech useEffect cleanup to udělat
-          // Jen naviguj a při příštím renderování se cleanup postará o destroy
           routerRef.current.push(url);
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         function go(steps: any[], localIndex: number) {
-          // Odfiltruj kroky s elementem, který neexistuje v DOM
-          const validSteps = steps.filter(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (s: any) => !s.element || document.querySelector(s.element)
-          );
-          if (validSteps.length === 0) return;
-
-          // Přepočti localIndex pokud se kroky změnily
-          const adjustedIndex = Math.min(localIndex, validSteps.length - 1);
-
           activeDriver = driver({
             animate: true,
             smoothScroll: true,
@@ -79,16 +65,15 @@ export default function TourGuide() {
             popoverClass: 'ampersun-tour-popover',
             nextBtnText: 'Další →',
             prevBtnText: '← Zpět',
-            doneBtnText: 'Zavřít',
-            // Uživatel kliknul X → ukončit tour a zničit driver
+            doneBtnText: 'Dokončit',
             onCloseClick: (_el: unknown, _step: unknown, { driver: d }: { driver: { destroy: () => void } }) => {
               endTour();
               d.destroy();
             },
             onDestroyed: () => { activeDriver = null; },
-            steps: validSteps,
+            steps,
           });
-          activeDriver.drive(adjustedIndex);
+          activeDriver.drive(localIndex);
         }
 
         // ── DASHBOARD (0–1) ──────────────────────────────────────────

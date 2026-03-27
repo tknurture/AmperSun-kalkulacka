@@ -13,7 +13,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { setTourStep } from '@/lib/tour';
+import { setTourStep, resetTourDone } from '@/lib/tour';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -29,6 +29,7 @@ interface Props {
 function TourStartButton({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const handleClick = () => {
+    resetTourDone();
     setTourStep(0);
     onClose?.();
     router.push('/');
