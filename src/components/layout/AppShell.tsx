@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Menu } from 'lucide-react';
 import Sidebar from './Sidebar';
 import LoginPage from '@/components/auth/LoginPage';
+import TourGuide from '@/components/tour/TourGuide';
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,6 +34,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         />
       )}
 
+      <TourGuide />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
       <div className="flex-1 flex flex-col min-h-screen overflow-auto">

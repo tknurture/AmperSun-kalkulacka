@@ -131,10 +131,11 @@ interface SectionProps {
   description?: string;
   children: ReactNode;
   className?: string;
+  id?: string;
 }
-export function FormSection({ title, description, children, className }: SectionProps) {
+export function FormSection({ title, description, children, className, id }: SectionProps) {
   return (
-    <div className={cn('bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden', className)}>
+    <div id={id} className={cn('bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden', className)}>
       <div className="px-6 py-4 border-b border-gray-100 bg-gray-50">
         <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
         {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}

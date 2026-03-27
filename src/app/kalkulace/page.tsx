@@ -80,7 +80,7 @@ export default function KalkulaceListPage() {
       />
 
       {/* Filtry */}
-      <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-white border-b border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+      <div id="tour-filters" className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 bg-white border-b border-gray-200 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
@@ -204,8 +204,8 @@ export default function KalkulaceListPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {filtered.map((k) => (
-                    <tr key={k.id} className="hover:bg-gray-50/50 transition-colors">
+                  {filtered.map((k, idx) => (
+                    <tr key={k.id} id={idx === 0 ? 'tour-kalkulace-row' : undefined} className="hover:bg-gray-50/50 transition-colors">
                       <td className="px-5 py-3.5">
                         <div className="font-medium text-gray-900">{k.klient.jmeno || '(bez jména)'}</div>
                         <div className="text-xs text-gray-400 mt-0.5">{k.cisloNabidky}</div>

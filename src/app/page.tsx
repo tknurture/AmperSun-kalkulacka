@@ -64,7 +64,7 @@ export default function DashboardPage() {
         subtitle={`Celkem ${stats.celkem} kalkulací`}
         actions={
           <Link href="/kalkulace/nova">
-            <Button><Plus className="w-4 h-4" />Nová kalkulace</Button>
+            <Button id="tour-nova-btn"><Plus className="w-4 h-4" />Nová kalkulace</Button>
           </Link>
         }
       />

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import {
   LayoutDashboard,
@@ -10,8 +10,10 @@ import {
   Settings,
   ChevronRight,
   X,
+  HelpCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { setTourStep } from '@/lib/tour';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -24,8 +26,28 @@ interface Props {
   onClose?: () => void;
 }
 
+function TourStartButton({ onClose }: { onClose?: () => void }) {
+  const router = useRouter();
+  const handleClick = () => {
+    setTourStep(0);
+    onClose?.();
+    router.push('/');
+  };
+  return (
+    <button
+      onClick={handleClick}
+      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 transition-all"
+    >
+      <HelpCircle className="w-4 h-4 shrink-0" />
+      <span className="flex-1 text-left">Průvodce aplikací</span>
+    </button>
+  );
+}
+
 export default function Sidebar({ open = false, onClose }: Props) {
   const pathname = usePathname();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _router = useRouter(); // needed by TourStartButton inside same 'use client' scope
 
   return (
     <aside
@@ -97,7 +119,8 @@ export default function Sidebar({ open = false, onClose }: Props) {
 
       {/* Spodní část */}
       <div className="px-3 py-4 border-t border-gray-100">
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 cursor-pointer">
+        <TourStartButton onClose={onClose} />
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-gray-500 hover:bg-gray-50 cursor-pointer mt-1">
           <Settings className="w-4 h-4" />
           <span>Nastavení</span>
         </div>

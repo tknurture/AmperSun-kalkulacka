@@ -294,7 +294,7 @@ export default function NabidkaPDFPage({ params }: { params: Promise<{ id: strin
           <span className="text-gray-400 ml-2 text-sm">{kalkulace.cisloNabidky}</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handlePrint} loading={printing}>
+          <Button id="tour-download-btn" onClick={handlePrint} loading={printing}>
             <Printer className="w-4 h-4" />
             Tisknout / Uložit jako PDF
           </Button>

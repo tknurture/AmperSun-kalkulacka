@@ -325,7 +325,7 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
               {/* Levý sloupec – položky a cenový přehled */}
               <div className="lg:col-span-2 space-y-4 sm:space-y-5">
                 {/* Souhrn cen nahoře */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div id="tour-price-cards" className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <Card className="bg-slate-50 border-slate-200">
                     <div className="text-xs text-slate-500 mb-1 font-medium">Pravidlová kalkulace</div>
                     <div className="text-xl font-bold text-slate-800">{formatCena(cenova.pravidlovaKalkulace)}</div>
@@ -359,7 +359,7 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
                 </div>
 
                 {/* Položky kalkulace */}
-                <Card padding={false}>
+                <Card id="tour-polozky" padding={false}>
                   <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                     <CardTitle>Rozpis položek</CardTitle>
                     <div className="flex items-center gap-2">
@@ -459,7 +459,7 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
               {/* Pravý sloupec – schválení */}
               <div className="space-y-4">
                 {/* Schválení ceny */}
-                <Card className={cenova.schvaleno ? 'border-green-300 bg-green-50' : ''}>
+                <Card id="tour-schvaleni-panel" className={cenova.schvaleno ? 'border-green-300 bg-green-50' : ''}>
                   <CardHeader>
                     <CardTitle>{cenova.schvaleno ? 'Schváleno' : 'Schválení ceny'}</CardTitle>
                     {cenova.schvaleno && <CheckCircle className="w-4 h-4 text-green-500" />}

@@ -39,7 +39,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-4xl">
       {/* Typ zakázky – nahoře prominentně */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+      <div id="tour-typ-zakazky" className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Typ zakázky</label>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {(Object.entries(TYP_ZAKAZKY_LABEL) as [TypZakazky, string][]).map(([key, label]) => (
@@ -60,7 +60,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
       </div>
 
       {/* Údaje o zákazníkovi */}
-      <FormSection title="Zákazník" description="Kontaktní a fakturační údaje">
+      <FormSection id="tour-klient" title="Zákazník" description="Kontaktní a fakturační údaje">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput
             label="Jméno / Název firmy *"
@@ -117,7 +117,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
 
       {/* Technické údaje – FVE */}
       {data.typZakazky !== 'bateriove_uloziste' && (
-        <FormSection title="FV systém" description="Parametry fotovoltaické instalace">
+        <FormSection id="tour-technicke" title="FV systém" description="Parametry fotovoltaické instalace">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormInput
               label="Roční spotřeba elektřiny (kWh)"
@@ -358,7 +358,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
           Zrušit
         </button>
         <div className="flex-1" />
-        <Button type="submit" size="lg" loading={saving}>
+        <Button id="tour-save-btn" type="submit" size="lg" loading={saving}>
           <Save className="w-4 h-4" />
           {isNew ? 'Uložit a přejít na kalkulaci' : 'Uložit změny'}
         </Button>
