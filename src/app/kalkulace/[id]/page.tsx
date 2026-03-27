@@ -288,28 +288,28 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
       />
 
       {/* Breadcrumb + tabs */}
-      <div className="px-8 py-3 bg-white border-b border-gray-200 flex items-center justify-between">
-        <Link href="/kalkulace" className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900">
-          <ChevronLeft className="w-4 h-4" />Zpět na seznam
+      <div className="px-4 sm:px-6 lg:px-8 py-3 bg-white border-b border-gray-200 flex items-center justify-between gap-3">
+        <Link href="/kalkulace" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 shrink-0">
+          <ChevronLeft className="w-4 h-4" /><span className="hidden sm:inline">Zpět na seznam</span>
         </Link>
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
           <button
             onClick={() => setTab('kalkulace')}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${tab === 'kalkulace' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${tab === 'kalkulace' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Kalkulace ceny
+            Kalkulace
           </button>
           <button
             onClick={() => setTab('udaje')}
-            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${tab === 'udaje' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-3 sm:px-4 py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${tab === 'udaje' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
           >
-            Údaje zakázky
+            Údaje
           </button>
         </div>
-        <div className="w-32" />
+        <div className="w-8 sm:w-32" />
       </div>
 
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
         {tab === 'udaje' ? (
           // ---- Editace údajů ----
           <KalkulaceFormular
@@ -321,11 +321,11 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
         ) : (
           // ---- Kalkulace ceny ----
           cenova && (
-            <div className="grid grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
               {/* Levý sloupec – položky a cenový přehled */}
-              <div className="col-span-2 space-y-5">
+              <div className="lg:col-span-2 space-y-4 sm:space-y-5">
                 {/* Souhrn cen nahoře */}
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                   <Card className="bg-slate-50 border-slate-200">
                     <div className="text-xs text-slate-500 mb-1 font-medium">Pravidlová kalkulace</div>
                     <div className="text-xl font-bold text-slate-800">{formatCena(cenova.pravidlovaKalkulace)}</div>
@@ -402,7 +402,7 @@ export default function KalkulaceDetailPage({ params }: { params: Promise<{ id: 
                 {/* Náklady a marže */}
                 <Card>
                   <CardHeader><CardTitle>Ekonomika zakázky (orientační)</CardTitle></CardHeader>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div className="text-center p-3 bg-slate-50 rounded-lg">
                       <div className="text-lg font-bold text-slate-700">{formatCena(cenova.odhadNakladu)}</div>
                       <div className="text-xs text-slate-500 mt-0.5">Odhadované náklady</div>

@@ -69,9 +69,9 @@ export default function DashboardPage() {
         }
       />
 
-      <div className="flex-1 p-8 space-y-6">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8 space-y-4 sm:space-y-6">
         {/* Statistiky */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <StatCard label="Celkem kalkulací" value={stats.celkem} icon={FileText} color="bg-slate-100 text-slate-700" />
           <StatCard label="Schválených" value={stats.schvalene} icon={CheckCircle} color="bg-green-100 text-green-700" />
           <StatCard label="Odeslaných nabídek" value={stats.odeslane} icon={Send} color="bg-blue-100 text-blue-700" />
@@ -84,9 +84,9 @@ export default function DashboardPage() {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Poslední kalkulace */}
-          <div className="col-span-2">
+          <div className="lg:col-span-2">
             <Card padding={false}>
               <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-900 text-sm">Poslední kalkulace</h3>

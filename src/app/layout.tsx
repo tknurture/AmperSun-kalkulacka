@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Sidebar from "@/components/layout/Sidebar";
+import AppShell from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "AmperSun – Kalkulačka zakázek",
@@ -14,11 +14,8 @@ export default function RootLayout({
 }) {
   return (
     <html lang="cs" className="h-full">
-      <body className="h-full flex bg-[#f8f9fb] antialiased">
-        <Sidebar />
-        <div className="flex-1 flex flex-col min-h-screen overflow-auto">
-          {children}
-        </div>
+      <body className="h-full bg-[#f8f9fb] antialiased">
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );

@@ -32,7 +32,7 @@ export default function NovaKalkulacePage() {
         title="Nová kalkulace"
         subtitle="Zadejte údaje o zákazníkovi a zakázce"
       />
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-4 sm:p-6 lg:p-8">
         <KalkulaceFormular
           initial={prazdna}
           onSubmit={handleSubmit}

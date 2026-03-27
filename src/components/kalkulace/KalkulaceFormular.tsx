@@ -41,7 +41,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
       {/* Typ zakázky – nahoře prominentně */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Typ zakázky</label>
-        <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           {(Object.entries(TYP_ZAKAZKY_LABEL) as [TypZakazky, string][]).map(([key, label]) => (
             <button
               key={key}
@@ -61,7 +61,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
 
       {/* Údaje o zákazníkovi */}
       <FormSection title="Zákazník" description="Kontaktní a fakturační údaje">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormInput
             label="Jméno / Název firmy *"
             placeholder="Jan Novák nebo FIRMA s.r.o."
@@ -118,7 +118,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
       {/* Technické údaje – FVE */}
       {data.typZakazky !== 'bateriove_uloziste' && (
         <FormSection title="FV systém" description="Parametry fotovoltaické instalace">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormInput
               label="Roční spotřeba elektřiny (kWh)"
               type="number"
@@ -214,7 +214,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
 
       {/* Objekt a střecha */}
       <FormSection title="Objekt a střecha" description="Parametry místa instalace">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormSelect
             label="Typ objektu"
             value={data.technickeUdaje.typObjektu}
@@ -311,7 +311,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
 
       {/* Obchodní údaje */}
       <FormSection title="Obchodní údaje" description="Interní informace o zakázce">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <FormSelect
             label="Priorita zakázky"
             value={data.obchodniUdaje.priorita}
@@ -349,7 +349,7 @@ export default function KalkulaceFormular({ initial, onSubmit, saving, isNew }: 
       </FormSection>
 
       {/* Akční panel */}
-      <div className="sticky bottom-0 bg-white border-t border-gray-200 -mx-8 px-8 py-4 flex items-center gap-3 shadow-lg">
+      <div className="sticky bottom-0 bg-white border-t border-gray-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-4 flex items-center gap-3 shadow-lg">
         <button
           type="button"
           onClick={() => router.back()}

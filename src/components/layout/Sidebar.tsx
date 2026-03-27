@@ -9,6 +9,7 @@ import {
   PlusCircle,
   Settings,
   ChevronRight,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,13 +19,27 @@ const navItems = [
   { href: '/kalkulace/nova', label: 'Nová kalkulace', icon: PlusCircle, highlight: true },
 ];
 
-export default function Sidebar() {
+interface Props {
+  open?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ open = false, onClose }: Props) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-60 shrink-0 bg-white border-r border-gray-200 flex flex-col h-screen sticky top-0">
+    <aside
+      className={cn(
+        'flex flex-col bg-white border-r border-gray-200 h-screen z-50',
+        // Mobile: fixed drawer, slides in/out
+        'fixed inset-y-0 left-0 w-72 transition-transform duration-300 ease-in-out',
+        // Desktop: sticky in normal flow, always visible
+        'md:sticky md:top-0 md:w-60 md:shrink-0 md:translate-x-0 md:transition-none',
+        open ? 'translate-x-0' : '-translate-x-full',
+      )}
+    >
       {/* Logo */}
-      <div className="px-5 py-5 border-b border-gray-100">
+      <div className="px-5 py-5 border-b border-gray-100 flex items-center justify-between">
         <Image
           src="/ampersun-logo.png"
           alt="AmperSun"
@@ -33,11 +48,21 @@ export default function Sidebar() {
           className="h-8 w-auto object-contain"
           priority
         />
+        {/* Close button – mobile only */}
+        <button
+          onClick={onClose}
+          className="md:hidden p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+          aria-label="Zavřít menu"
+        >
+          <X className="w-4 h-4" />
+        </button>
       </div>
 
       {/* Navigace */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        <div className="text-xs font-semibold text-gray-400 px-2 pb-2 uppercase tracking-wider">Hlavní menu</div>
+        <div className="text-xs font-semibold text-gray-400 px-2 pb-2 uppercase tracking-wider">
+          Hlavní menu
+        </div>
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -50,13 +75,14 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all group',
                 item.highlight
                   ? 'bg-amber-50 text-amber-700 hover:bg-amber-100'
                   : isActive
                   ? 'bg-gray-900 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900',
               )}
             >
               <Icon className="w-4 h-4 shrink-0" />
