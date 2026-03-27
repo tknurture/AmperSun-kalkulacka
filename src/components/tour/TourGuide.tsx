@@ -31,7 +31,6 @@ export default function TourGuide() {
 
     const { driver } = await import('driver.js');
 
-    // ── Pomocná funkce: vytvoř driver a spusť od localIndex ──────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     function createAndDrive(steps: any[], localIndex: number) {
       activeDriver = driver({
@@ -66,8 +65,11 @@ export default function TourGuide() {
               'Tento průvodce vás provede celým procesem — od vytvoření kalkulace až po stažení PDF nabídky. Klikněte <b>Další</b> pro pokračování.',
             side: 'over',
             align: 'center',
+            onNextClick: () => {
+              setTourStep(1);
+              activeDriver?.moveNext();
+            },
           },
-          onNextClick: () => { setTourStep(1); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-nova-btn',
@@ -77,11 +79,11 @@ export default function TourGuide() {
               'Tímto tlačítkem vytvoříte novou zakázku. Vyplníte zákazníka, technické parametry a systém spočítá cenu.',
             side: 'bottom',
             align: 'end',
-          },
-          onNextClick: () => {
-            setTourStep(TOUR_PAGES.nova.start);
-            destroyDriver();
-            router.push('/kalkulace/nova');
+            onNextClick: () => {
+              setTourStep(TOUR_PAGES.nova.start);
+              destroyDriver();
+              router.push('/kalkulace/nova');
+            },
           },
         },
       ];
@@ -103,8 +105,8 @@ export default function TourGuide() {
             description: 'Nejprve vyberte typ zakázky. Pro běžný dům zvolte <b>FVE Rodinný dům</b>.',
             side: 'bottom',
             align: 'start',
+            onNextClick: () => { setTourStep(3); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(3); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-klient',
@@ -113,8 +115,8 @@ export default function TourGuide() {
             description: 'Vyplňte jméno nebo název firmy, adresu realizace a kontaktní údaje zákazníka.',
             side: 'top',
             align: 'center',
+            onNextClick: () => { setTourStep(4); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(4); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-technicke',
@@ -123,8 +125,8 @@ export default function TourGuide() {
             description: 'Zadejte výkon FVE v kWp a počet panelů. Typ panelů a střídač jsou volitelné upřesnění.',
             side: 'top',
             align: 'center',
+            onNextClick: () => { setTourStep(5); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(5); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-save-btn',
@@ -133,11 +135,11 @@ export default function TourGuide() {
             description: 'Po vyplnění formuláře klikněte na <b>Uložit a přejít na kalkulaci</b>. Systém automaticky spočítá cenu.',
             side: 'top',
             align: 'end',
-          },
-          onNextClick: () => {
-            setTourStep(TOUR_PAGES.list.start);
-            destroyDriver();
-            router.push('/kalkulace');
+            onNextClick: () => {
+              setTourStep(TOUR_PAGES.list.start);
+              destroyDriver();
+              router.push('/kalkulace');
+            },
           },
         },
       ];
@@ -161,8 +163,8 @@ export default function TourGuide() {
             description: 'Kalkulace lze filtrovat podle typu zakázky a stavu, nebo vyhledávat podle jména zákazníka či čísla nabídky.',
             side: 'bottom',
             align: 'start',
+            onNextClick: () => { setTourStep(7); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(7); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-kalkulace-row',
@@ -171,12 +173,12 @@ export default function TourGuide() {
             description: 'Každý řádek je jedna zakázka. Kliknutím na ikonu oka 👁 otevřete detail s výpočtem ceny.',
             side: 'top',
             align: 'center',
-          },
-          onNextClick: () => {
-            if (!firstId) { endTour(); destroyDriver(); return; }
-            setTourStep(TOUR_PAGES.detail.start);
-            destroyDriver();
-            router.push(`/kalkulace/${firstId}`);
+            onNextClick: () => {
+              if (!firstId) { endTour(); destroyDriver(); return; }
+              setTourStep(TOUR_PAGES.detail.start);
+              destroyDriver();
+              router.push(`/kalkulace/${firstId}`);
+            },
           },
         },
       ];
@@ -202,8 +204,8 @@ export default function TourGuide() {
             description: 'Systém spočítal cenu automaticky. Vidíte <b>pravidlovou kalkulaci</b>, <b>doporučenou cenu</b> z historicky podobných zakázek a <b>finální návrh</b>.',
             side: 'bottom',
             align: 'center',
+            onNextClick: () => { setTourStep(9); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(9); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-polozky',
@@ -212,8 +214,8 @@ export default function TourGuide() {
             description: 'Detailní přehled všech položek kalkulace. Kliknutím na <b>Upravit položky</b> můžete ručně upravit ceny.',
             side: 'top',
             align: 'center',
+            onNextClick: () => { setTourStep(10); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(10); activeDriver?.moveNext(); },
         },
         {
           element: '#tour-schvaleni-panel',
@@ -222,12 +224,12 @@ export default function TourGuide() {
             description: 'Zadejte finální cenu (nebo slevu) a klikněte na <b>Schválit cenu</b>. Tím se zpřístupní generování PDF nabídky.',
             side: 'left',
             align: 'start',
-          },
-          onNextClick: () => {
-            const targetId = approvedKalk?.id ?? currentId;
-            setTourStep(TOUR_PAGES.nabidka.start);
-            destroyDriver();
-            router.push(`/kalkulace/${targetId}/nabidka`);
+            onNextClick: () => {
+              const targetId = approvedKalk?.id ?? currentId;
+              setTourStep(TOUR_PAGES.nabidka.start);
+              destroyDriver();
+              router.push(`/kalkulace/${targetId}/nabidka`);
+            },
           },
         },
       ];
@@ -250,8 +252,8 @@ export default function TourGuide() {
             description: 'Kliknutím na toto tlačítko se vygeneruje PDF nabídka a automaticky se stáhne do vašeho počítače.',
             side: 'bottom',
             align: 'end',
+            onNextClick: () => { setTourStep(12); activeDriver?.moveNext(); },
           },
-          onNextClick: () => { setTourStep(12); activeDriver?.moveNext(); },
         },
         {
           popover: {
@@ -260,10 +262,10 @@ export default function TourGuide() {
               'Skvěle! Nyní znáte celý proces — od vytvoření kalkulace až po stažení profesionální PDF nabídky pro zákazníka. Hodně úspěchů!',
             side: 'over',
             align: 'center',
-          },
-          onNextClick: () => {
-            endTour();
-            destroyDriver();
+            onNextClick: () => {
+              endTour();
+              destroyDriver();
+            },
           },
         },
       ];
@@ -273,7 +275,6 @@ export default function TourGuide() {
 
   useEffect(() => {
     initialized.current = false;
-    // Krátká prodleva aby se elementy na stránce stihly vyrenderovat
     const timer = setTimeout(() => {
       if (!initialized.current) {
         initialized.current = true;
