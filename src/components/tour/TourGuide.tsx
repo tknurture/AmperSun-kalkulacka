@@ -80,9 +80,10 @@ export default function TourGuide() {
             nextBtnText: 'Další →',
             prevBtnText: '← Zpět',
             doneBtnText: 'Zavřít',
-            onDestroyStarted: () => {
-              // Uživatel kliknul X nebo Escape
+            // Uživatel kliknul X → ukončit tour a zničit driver
+            onCloseClick: (_el: unknown, _step: unknown, { driver: d }: { driver: { destroy: () => void } }) => {
               endTour();
+              d.destroy();
             },
             onDestroyed: () => { activeDriver = null; },
             steps: validSteps,
